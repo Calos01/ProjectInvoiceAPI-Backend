@@ -2,7 +2,7 @@
 {
     public class InvoicePrincipaldto
     {
-        public InvoiceHeaderDTO header { get; set; }
-        public InvoiceDetailsDTO details { get; set; }
+        public InvoiceHeaderDTO? header { get; set; }
+        public List<InvoiceDetailsDTO>? details { get; set; }
     }
 }
