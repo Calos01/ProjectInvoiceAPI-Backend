@@ -35,7 +35,6 @@ namespace ProjectInvoiceAPI_Backend.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            
         }
 
     }
