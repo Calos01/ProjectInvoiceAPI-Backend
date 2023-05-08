@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectInvoiceAPI_Backend.DTO;
 using ProjectInvoiceAPI_Backend.Models;
+using System.Reflection.PortableExecutable;
 
 namespace ProjectInvoiceAPI_Backend.Container
 {
@@ -48,6 +49,134 @@ namespace ProjectInvoiceAPI_Backend.Container
             return new List<InvoiceDetailsDTO>();
         }
 
-       
+        public async Task<InvoiceRespuestaDTO> Save(InvoicePrincipaldto invoicepri)
+        {
+            string Result = string.Empty;
+            int process = 0;
+            var response = new InvoiceRespuestaDTO();
+            if (invoicepri != null)
+            {
+                using (var con = await this._context.Database.BeginTransactionAsync())
+                {
+                    if (invoicepri.header != null)
+                    {
+                        Result = await this.SaveHeader(invoicepri.header);
+                        if (!string.IsNullOrEmpty(Result) && (invoicepri.details != null && invoicepri.details.Count > 0))
+                        {
+                            invoicepri.details.ForEach(item =>
+                            {
+                                bool saveresult = this.SaveDetail(item).Result;
+                                if (saveresult)
+                                {
+                                    process++;
+                                }
+                            });
+                            if (invoicepri.details.Count == process)
+                            {
+                                await this._context.SaveChangesAsync();
+                                await con.CommitAsync(); //VERIFICA SI SE GUARDO LOS CAMBIOS EN LA BD
+                                response.respuesta = "PASO";
+                                response.respuesta = Result;
+                            }
+                            else
+                            {
+                                await con.RollbackAsync();//Devuelve el error
+                                response.respuesta = "NO PASO";
+                                response.respuesta = string.Empty;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return new InvoiceRespuestaDTO();
+                    }
+                }
+            }
+            return new InvoiceRespuestaDTO();
+        }
+        private async Task<string> SaveHeader(InvoiceHeaderDTO invoiceheader)
+        {
+            string Result = string.Empty;
+            try
+            {
+                TblSalesHeader _header = this._mapper.Map<TblSalesHeader>(invoiceheader);
+                var headerid = await _context.TblSalesHeaders.FirstOrDefaultAsync(data => data.InvoiceNo == invoiceheader.InvoiceNo);
+                if (headerid != null)//si no existe el invoice lo seteara con los datos que vienen
+                {
+                    headerid.CustomerId = invoiceheader.CustomerId;
+                    headerid.CustomerName = invoiceheader.CustomerName;
+                    headerid.DeliveryAddress = invoiceheader.DeliveryAddress;
+                    headerid.Total = invoiceheader.Total;
+                    headerid.Remarks = invoiceheader.Remarks;
+                    headerid.Tax = invoiceheader.Tax;
+                    headerid.NetTotal = invoiceheader.NetTotal;
+                    headerid.ModifyUser = invoiceheader.CreateUser;
+                    headerid.ModifyDate = DateTime.Now;
+
+                    //Eliminando la lista de productos con ese codigo invoiceno
+                    var _detdata=await _context.TblSalesProductInfos.Where(data=>data.InvoiceNo==invoiceheader.InvoiceNo).ToListAsync();
+                    if (_detdata!=null)
+                    {
+                        _context.TblSalesProductInfos.RemoveRange(_detdata);// TblSalesProductInfos es la lista de ProductInfos, esta jalando de InvoiceDbContext
+                    }
+                }
+                else
+                {
+                    //si es null entonces agregara el invoice header
+                    await this._context.TblSalesHeaders.AddAsync(_header);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        private async Task<bool> SaveDetail(InvoiceDetailsDTO invoicedetail)
+        {
+            try
+            {
+                TblSalesProductInfo _datdetail=_mapper.Map<TblSalesProductInfo>(invoicedetail);
+                if (_datdetail!=null)
+                {
+                await this._context.TblSalesProductInfos.AddAsync(_datdetail);
+                }
+                await _context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoicedetail.InvoiceNo).ToListAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public async Task<InvoiceRespuestaDTO> Delete(string invoiceno)
+        {
+            try
+            {
+                var _header = await _context.TblSalesHeaders.SingleOrDefaultAsync(data => data.InvoiceNo == invoiceno);
+                if (_header != null)
+                {
+                    _context.TblSalesHeaders.Remove(_header);
+                }
+
+                //Eliminando la lista de productos con ese codigo invoiceno
+                var _detdata = await _context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoiceno).ToListAsync();
+                if (_detdata != null)
+                {
+                    _context.TblSalesProductInfos.RemoveRange(_detdata);
+                }
+                return new InvoiceRespuestaDTO()
+                {
+                    respuesta = "Paso",
+                    keyvalue = invoiceno
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
+            return new InvoiceRespuestaDTO();
+        }
     }
 }
