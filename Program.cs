@@ -21,6 +21,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddTransient<IRepositoryCustomer, RepositoryCustomer>();
 builder.Services.AddTransient<IRepositoryInvoice, RepositoryInvoice>();
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
