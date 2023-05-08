@@ -6,8 +6,9 @@ namespace ProjectInvoiceAPI_Backend.Container
     {
         public Task<List<InvoiceHeaderDTO>> GetAllInvoiceHeader();
         public Task<InvoiceHeaderDTO> GetInvoiceHeaderPorId(string invoiceno);
-        public Task<List<InvoiceDetailsDTO>> GetInvoiceDetails(InvoiceHeaderDTO invoiceheader);
-        public Task<InvoiceRespuestaDTO> Save(InvoicePrincipaldto invoice);
-        public Task<InvoiceRespuestaDTO> Delete(string invoiceno);
+        public Task<List<InvoiceDetailsDTO>> GetInvoiceDetails(string invoice);
+
+        //public Task<InvoiceRespuestaDTO> Save(InvoicePrincipaldto invoice);
+        //public Task<InvoiceRespuestaDTO> Delete(string invoiceno);
     }
 }

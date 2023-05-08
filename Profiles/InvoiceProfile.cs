@@ -10,6 +10,9 @@ namespace ProjectInvoiceAPI_Backend.Profiles
         {
             CreateMap<TblCustomer, CustomerDTO>().ForMember(data=>data.Status,data=>data.MapFrom(s=>s.IsActive==true?"Activo":"No Activo"));
             CreateMap<CustomerDTO, TblCustomer>();
+            CreateMap<TblSalesHeader, InvoiceHeaderDTO>().ReverseMap();
+            CreateMap<TblSalesProductInfo, InvoiceDetailsDTO>().ReverseMap();
+
         }
     }
 }
