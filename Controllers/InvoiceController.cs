@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectInvoiceAPI_Backend.Container;
+using ProjectInvoiceAPI_Backend.DTO;
 
 namespace ProjectInvoiceAPI_Backend.Controllers
 {
@@ -13,23 +14,32 @@ namespace ProjectInvoiceAPI_Backend.Controllers
         {
             _repoContext = repo;
         }
+
         [HttpGet("GetInvoices")]
-        public async Task<IActionResult> ObtenerListaInvoice()
+        public async Task<List<InvoiceHeaderDTO>> ObtenerListaInvoice()
         {
-            var invoices= await _repoContext.GetAllInvoiceHeader();
-            return Ok(invoices);
+            return await _repoContext.GetAllInvoiceHeader();
         }
         [HttpGet("GetInvoiceId")]
-        public async Task<IActionResult> ObtenerInvoiceId(string invoiceno)
+        public async Task<InvoiceHeaderDTO> ObtenerInvoiceId(string invoiceno)
         {
-            var invoiceid = await _repoContext.GetInvoiceHeaderPorId(invoiceno);
-            return Ok(invoiceid);   
+            return await _repoContext.GetInvoiceHeaderPorId(invoiceno);  
         }
         [HttpGet("GetListDetails")]
-        public async Task<IActionResult> ObtenerListaDetails(string invoceno)
+        public async Task<List<InvoiceDetailsDTO>> ObtenerListaDetails(string invoceno)
         {
-            var details = await _repoContext.GetInvoiceDetails(invoceno);
-            return Ok(details);
+            return await _repoContext.GetInvoiceDetails(invoceno);
+            
+        }
+        [HttpPost("SaveInvoice")]
+        public async Task<InvoiceRespuestaDTO> GuardarInvoice(InvoicePrincipaldto invoicepri)
+        {
+            return await _repoContext.Save(invoicepri);
+        }
+        [HttpDelete("DeleteInvoice")]
+        public async Task<InvoiceRespuestaDTO> EliminarInvoice(string invoiceno)
+        {
+            return await _repoContext.Delete(invoiceno);
         }
     }
 }

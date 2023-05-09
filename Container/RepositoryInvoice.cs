@@ -78,21 +78,21 @@ namespace ProjectInvoiceAPI_Backend.Container
                                 response.respuesta = "PASO";
                                 response.respuesta = Result;
                             }
-                            else
-                            {
-                                await con.RollbackAsync();//Devuelve el error
-                                response.respuesta = "NO PASO";
-                                response.respuesta = string.Empty;
-                            }
+                        }
+                        else
+                        {
+                            await con.RollbackAsync();//Devuelve el error
+                            response.respuesta = "NO PASO";
+                            response.respuesta = string.Empty;
                         }
                     }
-                    else
-                    {
-                        return new InvoiceRespuestaDTO();
-                    }
-                }
+                };             
             }
-            return new InvoiceRespuestaDTO();
+            else
+            {
+                return new InvoiceRespuestaDTO();
+            }
+            return response;
         }
         private async Task<string> SaveHeader(InvoiceHeaderDTO invoiceheader)
         {
@@ -114,10 +114,10 @@ namespace ProjectInvoiceAPI_Backend.Container
                     headerid.ModifyDate = DateTime.Now;
 
                     //Eliminando la lista de productos con ese codigo invoiceno
-                    var _detdata=await _context.TblSalesProductInfos.Where(data=>data.InvoiceNo==invoiceheader.InvoiceNo).ToListAsync();
-                    if (_detdata!=null)
+                    var _detdata = await this._context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoiceheader.InvoiceNo).ToListAsync();
+                    if (_detdata != null)
                     {
-                        _context.TblSalesProductInfos.RemoveRange(_detdata);// TblSalesProductInfos es la lista de ProductInfos, esta jalando de InvoiceDbContext
+                        this._context.TblSalesProductInfos.RemoveRange(_detdata);// TblSalesProductInfos es la lista de ProductInfos, esta jalando de InvoiceDbContext
                     }
                 }
                 else
@@ -136,12 +136,8 @@ namespace ProjectInvoiceAPI_Backend.Container
         {
             try
             {
-                TblSalesProductInfo _datdetail=_mapper.Map<TblSalesProductInfo>(invoicedetail);
-                if (_datdetail!=null)
-                {
+                TblSalesProductInfo _datdetail = _mapper.Map<TblSalesProductInfo>(invoicedetail);
                 await this._context.TblSalesProductInfos.AddAsync(_datdetail);
-                }
-                await _context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoicedetail.InvoiceNo).ToListAsync();
                 return true;
             }
             catch (Exception ex)
@@ -153,6 +149,7 @@ namespace ProjectInvoiceAPI_Backend.Container
         {
             try
             {
+                //Eliminando el header
                 var _header = await _context.TblSalesHeaders.SingleOrDefaultAsync(data => data.InvoiceNo == invoiceno);
                 if (_header != null)
                 {
@@ -175,8 +172,6 @@ namespace ProjectInvoiceAPI_Backend.Container
             {
                 throw ex;
             }
-            
-            return new InvoiceRespuestaDTO();
         }
-    }
+    }       
 }
