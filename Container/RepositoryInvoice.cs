@@ -61,23 +61,25 @@ namespace ProjectInvoiceAPI_Backend.Container
                     if (invoicepri.header != null)
                     {
                         Result = await this.SaveHeader(invoicepri.header);
-                        if (!string.IsNullOrEmpty(Result) && (invoicepri.details != null && invoicepri.details.Count > 0))
+                    }
+                    if (!string.IsNullOrEmpty(Result) && (invoicepri.details != null && invoicepri.details.Count > 0))
+                    {
+                        invoicepri.details.ForEach(item =>
                         {
-                            invoicepri.details.ForEach(item =>
+                            //invoicepri.header.CreateUser para jalar el createuser del salesHeader a la tabla de detalles
+                            bool saveresult = this.SaveDetail(item, invoicepri.header.CreateUser).Result;
+                            if (saveresult)
                             {
-                                bool saveresult = this.SaveDetail(item).Result;
-                                if (saveresult)
-                                {
-                                    process++;
-                                }
-                            });
-                            if (invoicepri.details.Count == process)
-                            {
-                                await this._context.SaveChangesAsync();
-                                await con.CommitAsync(); //VERIFICA SI SE GUARDO LOS CAMBIOS EN LA BD
-                                response.respuesta = "PASO";
-                                response.respuesta = Result;
+                                process++;
                             }
+                        });
+
+                        if (invoicepri.details.Count == process)
+                        {
+                            await this._context.SaveChangesAsync();
+                            await con.CommitAsync(); //VERIFICA SI SE GUARDO LOS CAMBIOS EN LA BD
+                            response.respuesta = "PASO";
+                            response.keyvalue = Result;
                         }
                         else
                         {
@@ -85,6 +87,11 @@ namespace ProjectInvoiceAPI_Backend.Container
                             response.respuesta = "NO PASO";
                             response.respuesta = string.Empty;
                         }
+                    }
+                    else
+                    {
+                        response.respuesta = "NO PASO";
+                        response.respuesta = string.Empty;
                     }
                 };             
             }
@@ -94,13 +101,14 @@ namespace ProjectInvoiceAPI_Backend.Container
             }
             return response;
         }
+
         private async Task<string> SaveHeader(InvoiceHeaderDTO invoiceheader)
         {
             string Result = string.Empty;
             try
             {
                 TblSalesHeader _header = this._mapper.Map<TblSalesHeader>(invoiceheader);
-                var headerid = await _context.TblSalesHeaders.FirstOrDefaultAsync(data => data.InvoiceNo == invoiceheader.InvoiceNo);
+                var headerid = await this._context.TblSalesHeaders.FirstOrDefaultAsync(data => data.InvoiceNo == invoiceheader.InvoiceNo);
                 if (headerid != null)//si no existe el invoice lo seteara con los datos que vienen
                 {
                     headerid.CustomerId = invoiceheader.CustomerId;
@@ -115,7 +123,7 @@ namespace ProjectInvoiceAPI_Backend.Container
 
                     //Eliminando la lista de productos con ese codigo invoiceno
                     var _detdata = await this._context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoiceheader.InvoiceNo).ToListAsync();
-                    if (_detdata != null)
+                    if (_detdata != null && _detdata.Count >0)
                     {
                         this._context.TblSalesProductInfos.RemoveRange(_detdata);// TblSalesProductInfos es la lista de ProductInfos, esta jalando de InvoiceDbContext
                     }
@@ -125,6 +133,7 @@ namespace ProjectInvoiceAPI_Backend.Container
                     //si es null entonces agregara el invoice header
                     await this._context.TblSalesHeaders.AddAsync(_header);
                 }
+                Result = invoiceheader.InvoiceNo;
             }
             catch (Exception ex)
             {
@@ -132,11 +141,13 @@ namespace ProjectInvoiceAPI_Backend.Container
             }
             return Result;
         }
-        private async Task<bool> SaveDetail(InvoiceDetailsDTO invoicedetail)
+        private async Task<bool> SaveDetail(InvoiceDetailsDTO invoicedetail, string createuser)
         {
             try
             {
-                TblSalesProductInfo _datdetail = _mapper.Map<TblSalesProductInfo>(invoicedetail);
+                TblSalesProductInfo _datdetail = this._mapper.Map<TblSalesProductInfo>(invoicedetail);
+                _datdetail.CreateDate = DateTime.Now;
+                _datdetail.CreateUser= createuser;
                 await this._context.TblSalesProductInfos.AddAsync(_datdetail);
                 return true;
             }
@@ -150,18 +161,20 @@ namespace ProjectInvoiceAPI_Backend.Container
             try
             {
                 //Eliminando el header
-                var _header = await _context.TblSalesHeaders.SingleOrDefaultAsync(data => data.InvoiceNo == invoiceno);
+                var _header = await this._context.TblSalesHeaders.FirstOrDefaultAsync(data => data.InvoiceNo == invoiceno);
                 if (_header != null)
                 {
-                    _context.TblSalesHeaders.Remove(_header);
+                    this._context.TblSalesHeaders.Remove(_header);
                 }
 
                 //Eliminando la lista de productos con ese codigo invoiceno
-                var _detdata = await _context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoiceno).ToListAsync();
-                if (_detdata != null)
+                var _detdata = await this._context.TblSalesProductInfos.Where(data => data.InvoiceNo == invoiceno).ToListAsync();
+                if (_detdata != null && _detdata.Count >0)
                 {
-                    _context.TblSalesProductInfos.RemoveRange(_detdata);
+                    this._context.TblSalesProductInfos.RemoveRange(_detdata);
                 }
+                await this._context.SaveChangesAsync();
+
                 return new InvoiceRespuestaDTO()
                 {
                     respuesta = "Paso",

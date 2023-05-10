@@ -36,6 +36,11 @@ namespace ProjectInvoiceAPI_Backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("GetCustomer")]
+        public async Task<CustomerDTO> ObtenerCustomerId(string code)
+        {
+            return await _repoContext.GetById(code);
+        }
 
     }
 }
