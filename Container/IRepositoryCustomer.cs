@@ -6,6 +6,6 @@ namespace ProjectInvoiceAPI_Backend.Container
     public interface IRepositoryCustomer
     {
         public Task<List<TblCustomer>> GetAll();
-
+        public Task<CustomerDTO> GetById(string Code);
     }
 }

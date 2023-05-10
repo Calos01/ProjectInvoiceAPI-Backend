@@ -20,6 +20,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 //Repository
 builder.Services.AddTransient<IRepositoryCustomer, RepositoryCustomer>();
 builder.Services.AddTransient<IRepositoryInvoice, RepositoryInvoice>();
+builder.Services.AddTransient<IRepositoryProduct, RepositoryProduct>();
 
 
 var app = builder.Build();
