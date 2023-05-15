@@ -67,7 +67,7 @@ namespace ProjectInvoiceAPI_Backend.Container
                         invoicepri.details.ForEach(item =>
                         {
                             //invoicepri.header.CreateUser para jalar el createuser del salesHeader a la tabla de detalles
-                            bool saveresult = this.SaveDetail(item, invoicepri.header.CreateUser).Result;
+                            bool saveresult = this.SaveDetail(item, invoicepri.header.CreateUser, invoicepri.header.InvoiceNo).Result;
                             if (saveresult)
                             {
                                 process++;
@@ -85,13 +85,13 @@ namespace ProjectInvoiceAPI_Backend.Container
                         {
                             await con.RollbackAsync();//Devuelve el error
                             response.respuesta = "NO PASO";
-                            response.respuesta = string.Empty;
+                            response.keyvalue = string.Empty;
                         }
                     }
                     else
                     {
-                        response.respuesta = "NO PASO";
-                        response.respuesta = string.Empty;
+                        response.respuesta = "NO PASO TODO";
+                        response.keyvalue = string.Empty;
                     }
                 };             
             }
@@ -141,13 +141,14 @@ namespace ProjectInvoiceAPI_Backend.Container
             }
             return Result;
         }
-        private async Task<bool> SaveDetail(InvoiceDetailsDTO invoicedetail, string createuser)
+        private async Task<bool> SaveDetail(InvoiceDetailsDTO invoicedetail, string createuser, string invoice)
         {
             try
             {
                 TblSalesProductInfo _datdetail = this._mapper.Map<TblSalesProductInfo>(invoicedetail);
                 _datdetail.CreateDate = DateTime.Now;
                 _datdetail.CreateUser= createuser;
+                _datdetail.InvoiceNo= invoice;
                 await this._context.TblSalesProductInfos.AddAsync(_datdetail);
                 return true;
             }

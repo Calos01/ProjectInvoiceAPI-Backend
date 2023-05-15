@@ -23,5 +23,6 @@
         public string? CreateUser { get; set; }
 
         public DateTime? CreateDate { get; set; }
+        public List<InvoiceDetailsDTO>? details { get; set; }
     }
 }

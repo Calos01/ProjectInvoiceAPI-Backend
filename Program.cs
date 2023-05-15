@@ -22,6 +22,11 @@ builder.Services.AddTransient<IRepositoryCustomer, RepositoryCustomer>();
 builder.Services.AddTransient<IRepositoryInvoice, RepositoryInvoice>();
 builder.Services.AddTransient<IRepositoryProduct, RepositoryProduct>();
 
+//CORS
+builder.Services.AddCors(options => options.AddPolicy("AllowWebapp",
+                                    builder => builder.AllowAnyOrigin()
+                                                    .AllowAnyHeader()
+                                                    .AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -31,6 +36,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//CORS 
+app.UseCors("AllowWebapp");
 
 app.UseHttpsRedirection();
 
