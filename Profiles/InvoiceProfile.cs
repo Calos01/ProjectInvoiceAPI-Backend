@@ -13,6 +13,7 @@ namespace ProjectInvoiceAPI_Backend.Profiles
             CreateMap<TblSalesHeader, InvoiceHeaderDTO>().ReverseMap();
             CreateMap<TblSalesProductInfo, InvoiceDetailsDTO>().ReverseMap();
             CreateMap<TblProduct, ProductDTO>().ReverseMap();
+            CreateMap<TblSalesHeader, InvoiceInput>().ReverseMap();
         }
     }
 }
