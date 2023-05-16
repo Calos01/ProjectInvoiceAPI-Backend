@@ -1,6 +1,6 @@
 ﻿namespace ProjectInvoiceAPI_Backend.DTO
 {
-    public class InvoiceHeaderDTO
+    public class InvoiceInput
     {
         public string InvoiceNo { get; set; } = null!;
 
@@ -23,5 +23,6 @@
         public string? CreateUser { get; set; }
 
         public DateTime? CreateDate { get; set; }
+        public List<InvoiceDetailsDTO>? details { get; set; }
     }
 }

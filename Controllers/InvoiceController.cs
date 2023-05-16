@@ -32,7 +32,7 @@ namespace ProjectInvoiceAPI_Backend.Controllers
             
         }
         [HttpPost("SaveInvoice")]
-        public async Task<InvoiceRespuestaDTO> GuardarInvoice([FromBody] InvoicePrincipaldto invoicepri)
+        public async Task<InvoiceRespuestaDTO> GuardarInvoice([FromBody] InvoiceInput invoicepri)
         {   
             return await _repoContext.Save(invoicepri);
         }

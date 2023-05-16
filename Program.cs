@@ -1,6 +1,8 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectInvoiceAPI_Backend.Container;
 using ProjectInvoiceAPI_Backend.Models;
+using ProjectInvoiceAPI_Backend.Profiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<InvoiceDbContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
 
 //AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+var automapper = new MapperConfiguration(item => item.AddProfile(new InvoiceProfile()));
+IMapper mapper = automapper.CreateMapper();
+builder.Services.AddSingleton(mapper);
+//builder.Services.AddAutoMapper(typeof(Program));
 
 //Repository
 builder.Services.AddTransient<IRepositoryCustomer, RepositoryCustomer>();

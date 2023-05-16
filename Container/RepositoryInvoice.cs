@@ -49,7 +49,7 @@ namespace ProjectInvoiceAPI_Backend.Container
             return new List<InvoiceDetailsDTO>();
         }
 
-        public async Task<InvoiceRespuestaDTO> Save(InvoicePrincipaldto invoicepri)
+        public async Task<InvoiceRespuestaDTO> Save(InvoiceInput invoicepri)
         {
             string Result = string.Empty;
             int process = 0;
@@ -58,16 +58,16 @@ namespace ProjectInvoiceAPI_Backend.Container
             {
                 using (var con = await this._context.Database.BeginTransactionAsync())
                 {
-                    if (invoicepri.header != null)
+                    if (invoicepri != null)
                     {
-                        Result = await this.SaveHeader(invoicepri.header);
+                        Result = await this.SaveHeader(invoicepri);
                     }
                     if (!string.IsNullOrEmpty(Result) && (invoicepri.details != null && invoicepri.details.Count > 0))
                     {
                         invoicepri.details.ForEach(item =>
                         {
                             //invoicepri.header.CreateUser para jalar el createuser del salesHeader a la tabla de detalles
-                            bool saveresult = this.SaveDetail(item, invoicepri.header.CreateUser, invoicepri.header.InvoiceNo).Result;
+                            bool saveresult = this.SaveDetail(item, invoicepri.CreateUser, invoicepri.InvoiceNo).Result;
                             if (saveresult)
                             {
                                 process++;
@@ -102,13 +102,15 @@ namespace ProjectInvoiceAPI_Backend.Container
             return response;
         }
 
-        private async Task<string> SaveHeader(InvoiceHeaderDTO invoiceheader)
+        private async Task<string> SaveHeader(InvoiceInput invoiceheader)
         {
             string Result = string.Empty;
             try
             {
                 TblSalesHeader _header = this._mapper.Map<TblSalesHeader>(invoiceheader);
+                _header.InvoiceDate = DateTime.Now;
                 var headerid = await this._context.TblSalesHeaders.FirstOrDefaultAsync(data => data.InvoiceNo == invoiceheader.InvoiceNo);
+                
                 if (headerid != null)//si no existe el invoice lo seteara con los datos que vienen
                 {
                     headerid.CustomerId = invoiceheader.CustomerId;
