@@ -42,9 +42,9 @@ namespace ProjectInvoiceAPI_Backend.Container
         {
             //where para jalar varios datoscon mismo codigo
             var invoicedetail= await _context.TblSalesProductInfos.Where(data=> data.InvoiceNo==invoiceno).ToListAsync();
-            if(invoicedetail != null)
+            if(invoicedetail != null && invoicedetail.Count>0)
             {
-                return _mapper.Map<List<InvoiceDetailsDTO>>(invoicedetail);
+                return this._mapper.Map<List<InvoiceDetailsDTO>>(invoicedetail);
             }
             return new List<InvoiceDetailsDTO>();
         }
